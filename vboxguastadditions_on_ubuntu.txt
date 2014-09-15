@@ -1,0 +1,6 @@
+mount /dev/cdrom /mnt              # or any other mountpoint
+cd /mnt
+./VBoxLinuxAdditions.run
+reboot
+
+sudo mount -t vboxsf <share-name> /where/to/share
