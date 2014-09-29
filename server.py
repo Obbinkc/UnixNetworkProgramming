@@ -1,34 +1,15 @@
-#! /usr/bin/env python
+#!/usr/bin/python           # This is server.py file
 
-from urllib.request import urlopen
-from socket import socket
-from sys import argv
+import socket               # Import socket module
 
-def tcp_test(server_info):
-    cpos = server_info.find(':')
-    try:
-        sock = socket()
-        sock.connect((server_info[:cpos], int(server_info[cpos+1:])))
-        sock.close
-        return True
-    except:
-        return False
+s = socket.socket()         # Create a socket object
+host = socket.gethostname() # Get local machine name
+port = 12345                # Reserve a port for your service.
+s.bind((host, port))        # Bind to the port
 
-def http_test(server_info):
-    try:
-        data = urlopen(server_info).read()
-        return True
-    except:
-        return False
-
-def server_test(test_type, server_info):
-    if test_type.lower() == 'tcp':
-        return tcp_test(server_info)
-    elif test_type.lower() == 'http':
-        return http_test(server_info)
-
-if __name__ == '__main__':
-    if len(argv) != 3:
-        print('Wrong number of arguments.')
-    elif not server_test(argv[1], argv[2]):
-    	 print('Unable to connect to the service %s %s.' % (argv[1].upper(), argv[2]))
+s.listen(5)                 # Now wait for client connection.
+while True:
+   c, addr = s.accept()     # Establish connection with client.
+   print 'Got connection from', addr
+   c.send('Thank you for connecting')
+   c.close()                # Close the connection
