@@ -1,6 +1,6 @@
-#Packet sniffer in python
-#For Linux - Sniffs all incoming and outgoing packets :)
-#Silver Moon (m00n.silv3r@gmail.com)
+#Team 04 UNP Network Monitor (python)
+#Packet sniffer used to monitor network traffic
+#For Linux (tested in Ubuntu)- Sniffs all incoming and outgoing packets
  
 import socket, sys
 from struct import *
