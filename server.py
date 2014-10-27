@@ -6,6 +6,7 @@
 import socket, sys
 from struct import *
 import MySQLdb
+import datetime
 
 s = socket.socket()
 host = socket.gethostname()
@@ -20,9 +21,11 @@ while True:
     print("**                                                                **")
     print("**               Welcome to the network monitoring                **")
     print("** This network monitoring will monitor the following packets:    **")
-    print("**                    the TCP protocol                            **")
-    print("**                    the UDP protocol                            **")
-    print("**                    the ICMP protocol                           **") 
+    print("**                 the  ETHERNET packets                          **")
+    print("**                    the  IP packets                             **")
+    print("**                    the TCP packets                             **")
+    print("**                    the UDP packets                             **")
+    print("**                    the ICMP packets                            **") 
     print("--------------------------------------------------------------------")
     c.send('You are succesfully connected\n')
     
@@ -42,15 +45,39 @@ while True:
         #packet string from tuple
         packet = packet[0]
          
-        #parse ethernet header
+        #----------------------------parse ethernet header--------------------------------------------------------------
         eth_length = 14
          
         eth_header = packet[:eth_length]
         eth = unpack('!6s6sH' , eth_header)
         eth_protocol = socket.ntohs(eth[2])
-        print 'Destination MAC:' + eth_addr(packet[0:6]) + ' | Source MAC:' + eth_addr(packet[6:12]) + ' | Protocol:' + str(eth_protocol)
+        
+        #-------------------------Database connection--------------------------
+        now = datetime.datetime.now()
+        logtime = now.strftime("%d-%m-%Y %H:%M")
+        try:
+        # Open database connection
+            con = MySQLdb.connect("localhost","root","Welkom01","UNP" )
+        
+        # prepare a cursor object using cursor() method
+            sql = con.cursor()
+        # Prepare SQL query to INSERT a record into the database.
+            sql.execute("""INSERT INTO ETH(Datetime,Dest_mac,Source_mac,Protocol)
+        VALUES (%s, %s, %s, %s)""",(logtime,eth_addr(packet[0:6]),eth_addr(packet[6:12]),eth_protocol))
+            con.commit()
+        
+            print 'Succesfully Inserted the ETHERNET values to DB !\n' 
+        except MySQLdb.Error, e:
+            print "Error %d: %s" % (e.args[0],e.args[1])
+            sys.exit(1)   
+        finally:    
+            if con:    
+                con.close()
+        #-------------------------Database connection--------------------------
+        
+        print 'ETHERNET Packet \n' + 'Destination MAC:' + eth_addr(packet[0:6]) + ' | Source MAC:' + eth_addr(packet[6:12]) + ' | Protocol:' + str(eth_protocol)
      
-        #Parse IP packets, IP Protocol number = 8
+        #-------------------------------Parse IP packets, IP Protocol number = 8-----------------------------------------
         if eth_protocol == 8 :
             #Parse IP header
             #take first 20 characters for the ip header
@@ -69,8 +96,31 @@ while True:
             protocol = iph[6]
             s_addr = socket.inet_ntoa(iph[8]);
             d_addr = socket.inet_ntoa(iph[9]);
+            
+            #-------------------------Database connection--------------------------
+            now = datetime.datetime.now()
+            logtime = now.strftime("%d-%m-%Y %H:%M")
+            try:
+            # Open database connection
+                con = MySQLdb.connect("localhost","root","Welkom01","UNP" )
+                
+            # prepare a cursor object using cursor() method
+                sql = con.cursor()
+            # Prepare SQL query to INSERT a record into the database.
+                sql.execute("""INSERT INTO IP(Datetime,version,IHL,TTL,Protocol,Source_addr,Dest_addr)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)""",(logtime,version,ihl,ttl,protocol,s_addr,d_addr))
+                con.commit()
+                
+                print 'Succesfully Inserted the IP values to DB !\n' 
+            except MySQLdb.Error, e:
+                print "Error %d: %s" % (e.args[0],e.args[1])
+                sys.exit(1)   
+            finally:    
+                if con:    
+                    con.close()
+            #-------------------------Database connection--------------------------
      
-            print 'Version:' + str(version) + ' | IP Header Length:' + str(ihl) + ' | TTL:' + str(ttl) + ' | Protocol:' + str(protocol) + ' | Source Address:' + str(s_addr) + ' | Destination Address:' + str(d_addr)
+            print 'IP Packet \n' + 'Version:' + str(version) + ' | IP Header Length:' + str(ihl) + ' | TTL:' + str(ttl) + ' | Protocol:' + str(protocol) + ' | Source Address:' + str(s_addr) + ' | Destination Address:' + str(d_addr)
      
             #-------------------------------------TCP protocol--------------------------------------------
             if protocol == 6 :
@@ -88,6 +138,8 @@ while True:
                 tcph_length = doff_reserved >> 4
                 
             #-------------------------Database connection--------------------------
+                now = datetime.datetime.now()
+                logtime = now.strftime("%d-%m-%Y %H:%M")
                 try:
                 # Open database connection
                     con = MySQLdb.connect("localhost","root","Welkom01","UNP" )
@@ -95,11 +147,11 @@ while True:
                 # prepare a cursor object using cursor() method
                     sql = con.cursor()
                 # Prepare SQL query to INSERT a record into the database.
-                    sql.execute("""INSERT INTO TCP(Source_port,Desc_port,Sequence,Acknowledge,Length)
-                VALUES (%s, %s, %s, %s, %s)""",(source_port,dest_port,sequence,acknowledgement,tcph_length))
+                    sql.execute("""INSERT INTO TCP(Datetime,Source_port,Desc_port,Sequence,Acknowledge,Length)
+                VALUES (%s, %s, %s, %s, %s, %s)""",(logtime,source_port,dest_port,sequence,acknowledgement,tcph_length))
                     con.commit()
                 
-                    print 'Succesfully Inserted the values to DB !' 
+                    print 'Succesfully Inserted the TCP values to DB !\n' 
                 except MySQLdb.Error, e:
                     print "Error %d: %s" % (e.args[0],e.args[1])
                     sys.exit(1)   
@@ -108,7 +160,7 @@ while True:
                         con.close()
             #-------------------------Database connection--------------------------
                 
-                print 'Source Port:' + str(source_port) + ' | Dest Port:' + str(dest_port) + ' | Sequence Number:' + str(sequence) + ' | Acknowledgement:' + str(acknowledgement) + ' | TCP header length:' + str(tcph_length)
+                print 'TCP Packet: \n' + 'Source Port:' + str(source_port) + ' | Dest Port:' + str(dest_port) + ' | Sequence Number:' + str(sequence) + ' | Acknowledgement:' + str(acknowledgement) + ' | TCP header length:' + str(tcph_length)
 
                 h_size = eth_length + iph_length + tcph_length * 4
                 data_size = len(packet) - h_size
@@ -132,6 +184,8 @@ while True:
                 checksum = icmph[2]
                 
                 #-------------------------Database connection--------------------------
+                now = datetime.datetime.now()
+                logtime = now.strftime("%d-%m-%Y %H:%M")
                 try:
                 # Open database connection
                     con = MySQLdb.connect("localhost","root","Welkom01","UNP" )
@@ -139,11 +193,11 @@ while True:
                 # prepare a cursor object using cursor() method
                     sql = con.cursor()
                 # Prepare SQL query to INSERT a record into the database.
-                    sql.execute("""INSERT INTO ICMP(Type,Code,Checksum)
-                VALUES (%s, %s, %s)""",(icmp_type,code,checksum))
+                    sql.execute("""INSERT INTO ICMP(Datetime,Type,Code,Checksum)
+                VALUES (%s, %s, %s, %s)""",(logtime,icmp_type,code,checksum))
                     con.commit()
                 
-                    print 'Succesfully Inserted the values to DB !' 
+                    print 'Succesfully Inserted the ICMP values to DB !\n' 
                 except MySQLdb.Error, e:
                     print "Error %d: %s" % (e.args[0],e.args[1])
                     sys.exit(1)   
@@ -153,7 +207,7 @@ while True:
                 #-------------------------Database connection--------------------------
            
                  
-                print 'Type:' + str(icmp_type) + ' | Code:' + str(code) + ' | Checksum:' + str(checksum)
+                print 'ICMP Packet: \n' + 'Type:' + str(icmp_type) + ' | Code:' + str(code) + ' | Checksum:' + str(checksum)
                  
                 h_size = eth_length + iph_length + icmph_length
                 data_size = len(packet) - h_size
@@ -179,6 +233,8 @@ while True:
                 
                               
             #-------------------------Database connection--------------------------
+                now = datetime.datetime.now()
+                logtime = now.strftime("%d-%m-%Y %H:%M")
                 try:
                 # Open database connection
                     con = MySQLdb.connect("localhost","root","Welkom01","UNP" )
@@ -186,11 +242,11 @@ while True:
                 # prepare a cursor object using cursor() method
                     sql = con.cursor()
                 # Prepare SQL query to INSERT a record into the database.
-                    sql.execute("""INSERT INTO UDP(Source_port,Desc_port,Length,Checksum)
-                VALUES (%s, %s, %s, %s)""",(source_port,dest_port,length,checksum))
+                    sql.execute("""INSERT INTO UDP(Datetime,Source_port,Dest_port,Length,Checksum)
+                VALUES (%s, %s, %s, %s, %s)""",(logtime,source_port,dest_port,length,checksum))
                     con.commit()
                 
-                    print 'Succesfully Inserted the values to DB !' 
+                    print 'Succesfully Inserted the UDP values to DB !\n' 
                 except MySQLdb.Error, e:
                     print "Error %d: %s" % (e.args[0],e.args[1])
                     sys.exit(1)   
@@ -199,7 +255,7 @@ while True:
                         con.close()
             #-------------------------Database connection--------------------------
                  
-                print 'Source Port:' + str(source_port) + ' | Dest Port:' + str(dest_port) + ' | Length:' + str(length) + ' | Checksum:' + str(checksum)
+                print 'UDP Packet: \n' + 'Source Port:' + str(source_port) + ' | Dest Port:' + str(dest_port) + ' | Length:' + str(length) + ' | Checksum:' + str(checksum)
                  
                 h_size = eth_length + iph_length + udph_length
                 data_size = len(packet) - h_size
