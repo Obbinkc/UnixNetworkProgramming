@@ -1,4 +1,5 @@
 #Team 04 UNP Network Monitor (python)
+#Christiaan Obbink, Salar Darwish, Ka Yue Sin
 #Packet sniffer used to monitor network traffic
 #For Linux (tested in Ubuntu)- Sniffs all incoming and outgoing packets
 #!/usr/bin/python
@@ -9,7 +10,7 @@ import MySQLdb
 import datetime
 
 s = socket.socket()
-host = socket.gethostname()
+host = '192.168.56.101'
 port = 12345
 s.bind((host, port))
 
@@ -17,17 +18,16 @@ s.listen(5)                 # Now wait for client connection.
 while True:
     c, addr = s.accept()     # Establish connection with client.
     print 'Got connection from', addr
-    print("\n------------------------------------------------------------------")
-    print("**                                                                **")
-    print("**               Welcome to the network monitoring                **")
-    print("** This network monitoring will monitor the following packets:    **")
-    print("**                 the  ETHERNET packets                          **")
-    print("**                    the  IP packets                             **")
-    print("**                    the TCP packets                             **")
-    print("**                    the UDP packets                             **")
-    print("**                    the ICMP packets                            **") 
-    print("--------------------------------------------------------------------")
-    c.send('You are succesfully connected\n')
+    c.send("\n------------------------------------------------------------------"
+           "\n**                                                                **"
+           "\n**               Welcome to the network monitoring                **"
+           "\n** This network monitoring will monitor the following packets:    **"
+           "\n**                 the  ETHERNET packets                          **"
+           "\n**                    the  IP packets                             **"
+           "\n**                    the TCP packets                             **"
+           "\n**                    the UDP packets                             **"
+           "\n**                    the ICMP packets                            **" 
+           "\n--------------------------------------------------------------------")
     
     try:
         sniffer = socket.socket( socket.AF_PACKET , socket.SOCK_RAW , socket.ntohs(0x0003))
