@@ -18,16 +18,6 @@ s.listen(5)                 # Now wait for client connection.
 while True:
     c, addr = s.accept()     # Establish connection with client.
     print 'Got connection from', addr
-    c.send("\n------------------------------------------------------------------"
-           "\n**                                                                **"
-           "\n**               Welcome to the network monitoring                **"
-           "\n** This network monitoring will monitor the following packets:    **"
-           "\n**                 the  ETHERNET packets                          **"
-           "\n**                    the  IP packets                             **"
-           "\n**                    the TCP packets                             **"
-           "\n**                    the UDP packets                             **"
-           "\n**                    the ICMP packets                            **" 
-           "\n--------------------------------------------------------------------")
     
     try:
         sniffer = socket.socket( socket.AF_PACKET , socket.SOCK_RAW , socket.ntohs(0x0003))
@@ -39,8 +29,9 @@ while True:
     def eth_addr (a) :
         b = "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % (ord(a[0]) , ord(a[1]) , ord(a[2]), ord(a[3]), ord(a[4]) , ord(a[5]))
         return b
-        # receive a packet
+
     while True:
+        # receive a packet
         packet = sniffer.recvfrom(65565)
         #packet string from tuple
         packet = packet[0]
@@ -268,5 +259,9 @@ while True:
             #-------------------------some other IP packet like IGMP----------------------------
             else :
                 print 'Protocol other than TCP/UDP/ICMP'
-                 
-    s.close
+                
+        try: 
+            c.send("connected")
+        except:    
+            break         
+    c.close
