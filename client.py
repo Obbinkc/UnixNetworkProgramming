@@ -9,7 +9,7 @@ import MySQLdb
 from csv import Sniffer
 
 s = socket.socket()         # Create a socket object
-host = '192.168.56.101'     # Get local machine name
+host = '192.168.56.102'     # Get local machine name
 port = 12345                # Reserve a port for your service.
 
 while True:     
@@ -61,7 +61,7 @@ while True:
                 # Open database connection
                     con = MySQLdb.connect("localhost","root","Welkom01","UNP" )
                 
-                # prepare a cursor object using cursor() method
+                # prepare a cursor object using cursor() method. We use Cursor to fetch the data
                     sql = con.cursor()
                 # Prepare SQL query to INSERT a record into the database.
                     sql.execute("SELECT Datetime,Dest_mac,Source_mac,Protocol FROM ETH")
@@ -84,7 +84,7 @@ while True:
             elif dtb == "2":
                 try:
                 # Open database connection
-                    con = MySQLdb.connect("localhost","root","Welkom01","UNP" )
+                    con = MySQLdb.connect("192.168.56.102","salar","Welkom01","UNP" )
                 
                 # prepare a cursor object using cursor() method
                     sql = con.cursor()
@@ -109,7 +109,7 @@ while True:
             elif dtb == "3":
                 try:
                 # Open database connection
-                    con = MySQLdb.connect("localhost","root","Welkom01","UNP" )
+                    con = MySQLdb.connect("192.168.56.102","root","Welkom01","UNP" )
                 
                 # prepare a cursor object using cursor() method
                     sql = con.cursor()
@@ -135,7 +135,7 @@ while True:
             
                 try:
                 # Open database connection
-                    con = MySQLdb.connect("192.168.56.101","root","Welkom01","UNP" )
+                    con = MySQLdb.connect("192.168.56.102","root","Welkom01","UNP" )
                 
                 # prepare a cursor object using cursor() method
                     sql = con.cursor()
@@ -146,7 +146,7 @@ while True:
                     data = sql.fetchall()
                     
                     for (Datetime,Source_port,Dest_port,Length,Checksum) in data:
-                        print("Date:",Datetime,"Source_port:",Source_port,"Dest_port:",Dest_port,"Length:",Length,"Checksum:",Checksum)
+                        print(Datetime,"Source_port:",Source_port,"Dest_port:",Dest_port,"Length:",Length,"Checksum:",Checksum)
                     
                 except MySQLdb.Error, e:
                     print "Error %d: %s" % (e.args[0],e.args[1])
@@ -160,7 +160,7 @@ while True:
             elif dtb == "5":
                 try:
                 # Open database connection
-                    con = MySQLdb.connect("localhost","root","Welkom01","UNP" )
+                    con = MySQLdb.connect("192.168.56.102","root","Welkom01","UNP" )
                 
                 # prepare a cursor object using cursor() method
                     sql = con.cursor()
